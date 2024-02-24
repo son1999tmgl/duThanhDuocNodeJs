@@ -8,6 +8,11 @@ class UserServices {
     );
     return result;
   }
+
+  async checkEmailExists(email: string) {
+    const user = await databaseService.users.findOne({ email: email });
+    return Boolean(user);
+  }
 }
 
 const userServices = new UserServices();
