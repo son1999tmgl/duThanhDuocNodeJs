@@ -16,5 +16,6 @@ export const USERMESSAGES = {
   CONFIRM_PASSWORD_LENGTH_MUST_BE_BETWEEN_6_AND_20: 'Confirmation password length must be between 6 and 20 characters',
   PASSWORD_CONFIRMATION_MISMATCH: 'Password confirmation does not match password',
   DATE_OF_BIRTH_IS_REQUIRED: 'Date of birth is required',
-  INVALID_DATE_FORMAT: 'Invalid date format'
+  INVALID_DATE_FORMAT: 'Invalid date format',
+  USER_NOT_FOUND: 'User not found'
 };

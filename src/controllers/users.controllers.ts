@@ -6,19 +6,13 @@ import userServices from '~/services/users.services';
 import * as core from 'express-serve-static-core';
 
 export const loginController = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  try {
-    const result = userServices.register(req.body);
-    return res.status(400).json({
-      message: 'success',
-      result: result
-    });
-  } catch (error) {
-    return res.status(400).json({
-      message: 'Register failed',
-      error: error
-    });
-  }
+  const { user }: any = req;
+  const { user_id } = user;
+  const result = await userServices.login(user_id);
+  return res.status(200).json({
+    message: 'success',
+    result: result
+  });
 };
 
 export const registerController = async (

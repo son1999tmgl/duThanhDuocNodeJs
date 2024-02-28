@@ -28,6 +28,15 @@ class UserServices {
       }
     });
   }
+  private signAccessAndRefreshToken(user_id: string) {
+    return Promise.all([this.signAcessToken(user_id), this.signRefreshToken(user_id)]);
+  }
+
+  async checkEmailExists(email: string) {
+    const user = await databaseService.users.findOne({ email: email });
+    return Boolean(user);
+  }
+
   async register(payload: RegisterReqBody) {
     const result = await databaseService.users.insertOne(
       new User({
@@ -37,20 +46,19 @@ class UserServices {
       })
     );
     const user_id = result.insertedId.toString();
-    const [accessToken, refreshToken] = await Promise.all([
-      this.signAcessToken(user_id),
-      this.signRefreshToken(user_id)
-    ]);
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(user_id);
     return {
       user: result,
       accessToken,
       refreshToken
     };
   }
-
-  async checkEmailExists(email: string) {
-    const user = await databaseService.users.findOne({ email: email });
-    return Boolean(user);
+  async login(user_id: string) {
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(user_id);
+    return {
+      accessToken,
+      refreshToken
+    };
   }
 }
 

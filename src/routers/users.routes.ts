@@ -9,4 +9,5 @@ const usesRouter = Router();
  * Body: { name: string, email: string, password: string, confirm_password: string, date_of_birth: ISO8601 }
  */
 usesRouter.post('/register', registerValidate, wrapRequestHandler(registerController));
+usesRouter.post('/login', loginValidate, wrapRequestHandler(loginController));
 export default usesRouter;
