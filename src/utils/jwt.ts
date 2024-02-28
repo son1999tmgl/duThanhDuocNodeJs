@@ -1,18 +1,20 @@
 import jwt from 'jsonwebtoken';
 
-function sign(payload: string | Buffer | object, privateKey: string, signOptions: jwt.SignOptions) {
-  return new Promise((resolve, reject) => {
-    jwt.sign(payload, privateKey, signOptions, function (err, token) {
+export const signToken = ({
+  payload,
+  privateKey = process.env.JWT_SECRET as string,
+  options = {
+    algorithm: 'HS256'
+  }
+}: {
+  payload: string | Buffer | object;
+  privateKey?: string;
+  options?: jwt.SignOptions;
+}) => {
+  return new Promise<string>((resolve, reject) => {
+    jwt.sign(payload, privateKey, options, function (err, token) {
       if (err) throw reject(err);
-      resolve('');
+      resolve(token as string);
     });
   });
-}
-
-export function signToken(
-  payload: any,
-  privateKey: string = process.env.JWT_SECRET as string,
-  signOptions: jwt.SignOptions = { algorithm: 'HS256' }
-) {
-  return sign(payload, privateKey, signOptions);
-}
+};
