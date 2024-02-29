@@ -2,6 +2,7 @@ import { checkSchema } from 'express-validator';
 import { USERMESSAGES } from '~/constants/message';
 import { databaseService } from '~/services/database.services';
 import userServices from '~/services/users.services';
+import { hasPassword256 } from '~/utils/crypto';
 import { validate } from '~/utils/validation';
 
 export const loginValidate = validate(
@@ -13,7 +14,10 @@ export const loginValidate = validate(
       trim: true,
       custom: {
         options: async (value, { req }) => {
-          const user = await databaseService.users.findOne({ email: value });
+          const user = await databaseService.users.findOne({
+            email: value,
+            password: hasPassword256(req.body.password)
+          });
           if (!user) throw new Error(USERMESSAGES.USER_NOT_FOUND);
           req.user = user;
           return true;
