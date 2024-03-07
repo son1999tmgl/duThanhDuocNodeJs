@@ -1,8 +1,13 @@
+import { Request } from 'express';
 import { checkSchema } from 'express-validator';
+import { isEmpty } from 'lodash';
+import HTTP_STATUS from '~/constants/httpStatus';
 import { USERMESSAGES } from '~/constants/message';
+import { ErrorWithStatus } from '~/models/Errors';
 import { databaseService } from '~/services/database.services';
 import userServices from '~/services/users.services';
 import { hasPassword256 } from '~/utils/crypto';
+import { verifyToken } from '~/utils/jwt';
 import { validate } from '~/utils/validation';
 
 export const loginValidate = validate(
@@ -143,4 +148,54 @@ export const registerValidate = validate(
       }
     }
   })
+);
+export const accessTokenValidate = validate(
+  checkSchema(
+    {
+      Authorization: {
+        notEmpty: {
+          errorMessage: USERMESSAGES.ACCESS_TOKEN_IS_REQUIRED
+        },
+        custom: {
+          options: async (value, { req }) => {
+            const access_token: string = value.replace('Bearer ', '');
+            if (!access_token) throw new Error(USERMESSAGES.ACCESS_TOKEN_IS_REQUIRED);
+            const decoded_authorization = await verifyToken({ token: access_token });
+            (req as Request).decoded_authorization = decoded_authorization;
+            return true;
+          }
+        }
+      }
+    },
+    ['headers']
+  )
+);
+export const refreshTokenValidate = validate(
+  checkSchema(
+    {
+      refresh_token: {
+        notEmpty: {
+          errorMessage: USERMESSAGES.REFRESH_TOKEN_IS_REQUIRED
+        },
+        custom: {
+          options: async (value, { req }) => {
+            try {
+              if (!value) throw new Error(USERMESSAGES.REFRESH_TOKEN_IS_REQUIRED);
+              const [decoded_refresh_authorization, refresh_token] = await Promise.all([
+                verifyToken({ token: value }),
+                databaseService.refreshTokens.findOne({ token: value })
+              ]);
+              if (refresh_token === null) {
+                throw new ErrorWithStatus({ message: 'Refresh token ko tồn tại', status: HTTP_STATUS.UNAUTHORIZED });
+              }
+              return true;
+            } catch (error) {
+              throw new ErrorWithStatus({ message: 'Refresh token ko đúng', status: HTTP_STATUS.UNAUTHORIZED });
+            }
+          }
+        }
+      }
+    },
+    ['body']
+  )
 );

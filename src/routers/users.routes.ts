@@ -1,6 +1,11 @@
 import { Router } from 'express';
-import { loginController, registerController } from '~/controllers/users.controllers';
-import { loginValidate, registerValidate } from '~/middlewares/users.middlewares';
+import { loginController, logoutController, registerController } from '~/controllers/users.controllers';
+import {
+  accessTokenValidate,
+  loginValidate,
+  refreshTokenValidate,
+  registerValidate
+} from '~/middlewares/users.middlewares';
 import { wrapRequestHandler } from '~/utils/handlers';
 const usesRouter = Router();
 
@@ -10,4 +15,5 @@ const usesRouter = Router();
  */
 usesRouter.post('/register', registerValidate, wrapRequestHandler(registerController));
 usesRouter.post('/login', loginValidate, wrapRequestHandler(loginController));
+usesRouter.post('/logout', accessTokenValidate, refreshTokenValidate, wrapRequestHandler(logoutController));
 export default usesRouter;

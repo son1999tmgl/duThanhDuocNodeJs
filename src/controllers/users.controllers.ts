@@ -25,3 +25,12 @@ export const registerController = async (
     result: result
   });
 };
+
+export const logoutController = async (req: Request, res: Response) => {
+  const { refresh_token } = req.body;
+  const result = await userServices.logout(refresh_token);
+  return res.status(200).json({
+    message: result.message,
+    result: result
+  });
+};

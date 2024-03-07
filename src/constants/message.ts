@@ -17,5 +17,8 @@ export const USERMESSAGES = {
   PASSWORD_CONFIRMATION_MISMATCH: 'Password confirmation does not match password',
   DATE_OF_BIRTH_IS_REQUIRED: 'Date of birth is required',
   INVALID_DATE_FORMAT: 'Invalid date format',
-  USER_NOT_FOUND: 'User not found'
+  USER_NOT_FOUND: 'User not found',
+  ACCESS_TOKEN_IS_REQUIRED: 'Access token is required',
+  REFRESH_TOKEN_IS_REQUIRED: 'Refresh token is required',
+  LOGOUT_SUCCESS: 'Logout successful'
 };
