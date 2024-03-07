@@ -20,5 +20,7 @@ export const USERMESSAGES = {
   USER_NOT_FOUND: 'User not found',
   ACCESS_TOKEN_IS_REQUIRED: 'Access token is required',
   REFRESH_TOKEN_IS_REQUIRED: 'Refresh token is required',
+  VERIFY_EMAIL_TOKEN_IS_REQUIRED: 'Verify email token is required',
+  ACCOUNT_ALREADY_VERIFIED: 'Account already verified',
   LOGOUT_SUCCESS: 'Logout successful'
 };

@@ -24,7 +24,7 @@ export const loginValidate = validate(
             password: hasPassword256(req.body.password)
           });
           if (!user) throw new Error(USERMESSAGES.USER_NOT_FOUND);
-          req.user = user;
+          (req as Request).user = user;
           return true;
         }
       }
@@ -160,7 +160,10 @@ export const accessTokenValidate = validate(
           options: async (value, { req }) => {
             const access_token: string = value.replace('Bearer ', '');
             if (!access_token) throw new Error(USERMESSAGES.ACCESS_TOKEN_IS_REQUIRED);
-            const decoded_authorization = await verifyToken({ token: access_token });
+            const decoded_authorization = await verifyToken({
+              token: access_token,
+              secretOnPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
+            });
             (req as Request).decoded_authorization = decoded_authorization;
             return true;
           }
@@ -182,7 +185,7 @@ export const refreshTokenValidate = validate(
             try {
               if (!value) throw new Error(USERMESSAGES.REFRESH_TOKEN_IS_REQUIRED);
               const [decoded_refresh_authorization, refresh_token] = await Promise.all([
-                verifyToken({ token: value }),
+                verifyToken({ token: value, secretOnPublicKey: process.env.JWT_SECRET_REFRESH_TOKEN as string }),
                 databaseService.refreshTokens.findOne({ token: value })
               ]);
               if (refresh_token === null) {
@@ -192,6 +195,30 @@ export const refreshTokenValidate = validate(
             } catch (error) {
               throw new ErrorWithStatus({ message: 'Refresh token ko đúng', status: HTTP_STATUS.UNAUTHORIZED });
             }
+          }
+        }
+      }
+    },
+    ['body']
+  )
+);
+
+export const verifyEmailTokenValidate = validate(
+  checkSchema(
+    {
+      verify_email_token: {
+        notEmpty: {
+          errorMessage: USERMESSAGES.VERIFY_EMAIL_TOKEN_IS_REQUIRED
+        },
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            const decoded_refresh_authorization = await verifyToken({
+              token: value,
+              secretOnPublicKey: process.env.JWT_SECRET_VERIFY_EMAIL_TOKEN as string
+            });
+            (req as Request).decoded_email_verify_token = decoded_refresh_authorization;
+            return true;
           }
         }
       }
