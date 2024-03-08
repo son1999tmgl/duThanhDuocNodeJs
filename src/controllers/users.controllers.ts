@@ -101,3 +101,16 @@ export const resetPasswrordController = async (req: Request, res: Response, next
   const result = await userServices.resetPasswrod(user_id.toString(), req.body.password);
   return res.json({ result });
 };
+
+export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
+  const user_id: ObjectId | undefined = req.decoded_authorization?.user_id;
+  if (!user_id) {
+    return next(new ErrorWithStatus({ message: USERMESSAGES.USER_NOT_FOUND, status: 401 }));
+  }
+  const user = await databaseService.users.findOne(new ObjectId(user_id));
+  if (!user) {
+    return next(new ErrorWithStatus({ message: USERMESSAGES.USER_NOT_FOUND, status: 401 }));
+  }
+  const result = await userServices.getMe(user_id.toString());
+  return res.json({ result });
+};

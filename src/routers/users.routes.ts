@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   emailVerifyController,
   forgotPasswrordController,
+  getMeController,
   loginController,
   logoutController,
   registerController,
@@ -50,4 +51,8 @@ usesRouter.post(
  * Body: { forgot_password_token: string, password: string, confirm_passwrod: string }
  */
 usesRouter.post('/reset-passwrod', resetPasswordValidator, wrapRequestHandler(resetPasswrordController));
+/**
+ * Description: Lấy thông tin tài khoản
+ */
+usesRouter.get('/me', accessTokenValidate, wrapRequestHandler(getMeController));
 export default usesRouter;
