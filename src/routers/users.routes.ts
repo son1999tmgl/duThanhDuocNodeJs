@@ -8,6 +8,7 @@ import {
   registerController,
   resendEmailVerifyController,
   resetPasswrordController,
+  updateMeController,
   verifyForgotPasswrordController
 } from '~/controllers/users.controllers';
 import {
@@ -17,8 +18,10 @@ import {
   refreshTokenValidate,
   registerValidate,
   resetPasswordValidator,
+  updateMeValidator,
   verifyEmailTokenValidate,
-  verifyForgotPasswordValidator
+  verifyForgotPasswordValidator,
+  verifyUserValidator
 } from '~/middlewares/users.middlewares';
 import { wrapRequestHandler } from '~/utils/handlers';
 const usesRouter = Router();
@@ -55,4 +58,14 @@ usesRouter.post('/reset-passwrod', resetPasswordValidator, wrapRequestHandler(re
  * Description: Lấy thông tin tài khoản
  */
 usesRouter.get('/me', accessTokenValidate, wrapRequestHandler(getMeController));
+/**
+ * Description: Cập nhật thông tin tài khoản
+ */
+usesRouter.patch(
+  '/me',
+  accessTokenValidate,
+  verifyUserValidator,
+  updateMeValidator,
+  wrapRequestHandler(updateMeController)
+);
 export default usesRouter;

@@ -1,6 +1,7 @@
-import { Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { ParamSchema, checkSchema } from 'express-validator';
 import { isEmpty } from 'lodash';
+import { UserVerifyStatus } from '~/constants/enum';
 import HTTP_STATUS from '~/constants/httpStatus';
 import { USERMESSAGES } from '~/constants/message';
 import { ErrorWithStatus } from '~/models/Errors';
@@ -260,6 +261,80 @@ export const verifyForgotPasswordValidator = validate(
   )
 );
 
+export const updateMeValidator = validate(
+  checkSchema(
+    {
+      name: {
+        optional: true,
+        isLength: {
+          options: {
+            min: 1,
+            max: 20
+          },
+          errorMessage: USERMESSAGES.NAME_LENGTH_MUST_BE_FROM_1_TO_20
+        },
+        trim: true
+      },
+      date_of_birth: {
+        optional: true,
+        notEmpty: {
+          errorMessage: USERMESSAGES.DATE_OF_BIRTH_IS_REQUIRED
+        },
+        isISO8601: {
+          options: {
+            strict: true,
+            strictSeparator: true
+          },
+          errorMessage: USERMESSAGES.INVALID_DATE_FORMAT
+        }
+      },
+      bio: {
+        optional: true,
+        isLength: {
+          options: {
+            max: 255
+          },
+          errorMessage: USERMESSAGES.BIO_LENGTH_MUST_BE_LESS_THAN_255
+        }
+      },
+      location: {
+        optional: true,
+        isLength: {
+          options: {
+            max: 50
+          },
+          errorMessage: USERMESSAGES.LOCATION_LENGTH_MUST_BE_LESS_THAN_50
+        }
+      },
+      website: {
+        optional: true,
+        isURL: {
+          errorMessage: USERMESSAGES.INVALID_URL_FORMAT
+        }
+      },
+      username: {
+        optional: true,
+        isString: {
+          errorMessage: USERMESSAGES.USERNAME_MUST_BE_STRING
+        }
+      },
+      avatar: {
+        optional: true,
+        isURL: {
+          errorMessage: USERMESSAGES.INVALID_URL_FORMAT
+        }
+      },
+      cover_photo: {
+        optional: true,
+        isURL: {
+          errorMessage: USERMESSAGES.INVALID_URL_FORMAT
+        }
+      }
+    },
+    ['body']
+  )
+);
+
 export const resetPasswordValidator = validate(
   checkSchema(
     {
@@ -270,3 +345,10 @@ export const resetPasswordValidator = validate(
     ['body']
   )
 );
+
+export const verifyUserValidator = (req: Request, res: Response, next: NextFunction) => {
+  const verify = req.decoded_authorization?.verify;
+  if (!verify || verify !== UserVerifyStatus.Verified)
+    throw new ErrorWithStatus({ message: USERMESSAGES.INSUFFICIENT_PERMISSIONS, status: HTTP_STATUS.UNAUTHORIZED });
+  next();
+};
