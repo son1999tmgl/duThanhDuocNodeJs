@@ -78,6 +78,28 @@ const forgotPasswrodSchema: ParamSchema = {
     }
   }
 };
+const nameSchema: ParamSchema = {
+  isLength: {
+    options: {
+      min: 1,
+      max: 20
+    },
+    errorMessage: USERMESSAGES.NAME_LENGTH_MUST_BE_FROM_1_TO_20
+  },
+  trim: true
+};
+const dateOfBirthSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: USERMESSAGES.DATE_OF_BIRTH_IS_REQUIRED
+  },
+  isISO8601: {
+    options: {
+      strict: true,
+      strictSeparator: true
+    },
+    errorMessage: USERMESSAGES.INVALID_DATE_FORMAT
+  }
+};
 
 export const loginValidate = validate(
   checkSchema({
@@ -104,16 +126,7 @@ export const loginValidate = validate(
 
 export const registerValidate = validate(
   checkSchema({
-    name: {
-      isLength: {
-        options: {
-          min: 1,
-          max: 20
-        },
-        errorMessage: USERMESSAGES.NAME_LENGTH_MUST_BE_FROM_1_TO_20
-      },
-      trim: true
-    },
+    name: nameSchema,
     email: {
       notEmpty: {
         errorMessage: USERMESSAGES.EMAIL_IS_REQUIRED
@@ -133,18 +146,7 @@ export const registerValidate = validate(
     },
     password: passwordSchema,
     confirm_password: confirmPasswordSchema,
-    date_of_birth: {
-      notEmpty: {
-        errorMessage: USERMESSAGES.DATE_OF_BIRTH_IS_REQUIRED
-      },
-      isISO8601: {
-        options: {
-          strict: true,
-          strictSeparator: true
-        },
-        errorMessage: USERMESSAGES.INVALID_DATE_FORMAT
-      }
-    }
+    date_of_birth: dateOfBirthSchema
   })
 );
 export const accessTokenValidate = validate(
@@ -266,27 +268,11 @@ export const updateMeValidator = validate(
     {
       name: {
         optional: true,
-        isLength: {
-          options: {
-            min: 1,
-            max: 20
-          },
-          errorMessage: USERMESSAGES.NAME_LENGTH_MUST_BE_FROM_1_TO_20
-        },
-        trim: true
+        ...nameSchema
       },
       date_of_birth: {
         optional: true,
-        notEmpty: {
-          errorMessage: USERMESSAGES.DATE_OF_BIRTH_IS_REQUIRED
-        },
-        isISO8601: {
-          options: {
-            strict: true,
-            strictSeparator: true
-          },
-          errorMessage: USERMESSAGES.INVALID_DATE_FORMAT
-        }
+        ...dateOfBirthSchema
       },
       bio: {
         optional: true,
