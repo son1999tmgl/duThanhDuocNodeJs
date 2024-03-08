@@ -15,6 +15,7 @@ import { USERMESSAGES } from '~/constants/message';
 import { ObjectId } from 'mongodb';
 import { UserVerifyStatus } from '~/constants/enum';
 import { ErrorWithStatus } from '~/models/Errors';
+import * as _ from 'lodash';
 
 export const loginController = async (req: Request, res: Response) => {
   const { user }: any = req;

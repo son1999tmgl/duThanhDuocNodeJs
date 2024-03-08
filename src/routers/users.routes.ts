@@ -11,6 +11,7 @@ import {
   updateMeController,
   verifyForgotPasswrordController
 } from '~/controllers/users.controllers';
+import { filterMiddleware } from '~/middlewares/common.middlewares';
 import {
   accessTokenValidate,
   forgotPasswrordValidate,
@@ -23,6 +24,7 @@ import {
   verifyForgotPasswordValidator,
   verifyUserValidator
 } from '~/middlewares/users.middlewares';
+import { UpdateMeReqBody } from '~/models/requests/User.requests';
 import { wrapRequestHandler } from '~/utils/handlers';
 const usesRouter = Router();
 
@@ -66,6 +68,16 @@ usesRouter.patch(
   accessTokenValidate,
   verifyUserValidator,
   updateMeValidator,
+  filterMiddleware<UpdateMeReqBody>([
+    'name',
+    'date_of_birth',
+    'bio',
+    'location',
+    'website',
+    'username',
+    'avatar',
+    'cover_photo'
+  ]),
   wrapRequestHandler(updateMeController)
 );
 export default usesRouter;
