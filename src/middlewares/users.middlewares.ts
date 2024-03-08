@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { checkSchema } from 'express-validator';
+import { ParamSchema, checkSchema } from 'express-validator';
 import { isEmpty } from 'lodash';
 import HTTP_STATUS from '~/constants/httpStatus';
 import { USERMESSAGES } from '~/constants/message';
@@ -9,6 +9,74 @@ import userServices from '~/services/users.services';
 import { hasPassword256 } from '~/utils/crypto';
 import { verifyToken } from '~/utils/jwt';
 import { validate } from '~/utils/validation';
+
+const passwordSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: USERMESSAGES.PASSWORD_IS_REQUIRED
+  },
+  isString: {
+    errorMessage: USERMESSAGES.PASSWORD_MUST_BE_A_STRING
+  },
+  isLength: {
+    options: {
+      min: 6,
+      max: 20
+    },
+    errorMessage: USERMESSAGES.PASSWORD_LENGTH_MUST_BE_BETWEEN_6_AND_20
+  },
+  isStrongPassword: {
+    options: {
+      minLength: 6,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1
+    },
+    errorMessage: USERMESSAGES.PASSWORD_STRONG_REQUIREMENTS
+  }
+};
+
+const confirmPasswordSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: USERMESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
+  },
+  isString: {
+    errorMessage: USERMESSAGES.CONFIRM_PASSWORD_MUST_BE_A_STRING
+  },
+  isLength: {
+    options: {
+      min: 6,
+      max: 20
+    },
+    errorMessage: USERMESSAGES.CONFIRM_PASSWORD_LENGTH_MUST_BE_BETWEEN_6_AND_20
+  },
+  custom: {
+    options: (value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error(USERMESSAGES.PASSWORD_CONFIRMATION_MISMATCH);
+      }
+      return true;
+    },
+    errorMessage: USERMESSAGES.PASSWORD_CONFIRMATION_MISMATCH
+  }
+};
+
+const forgotPasswrodSchema: ParamSchema = {
+  notEmpty: {
+    errorMessage: USERMESSAGES.FORGOT_PASSWORD_TOKEN_IS_REQUIRED
+  },
+  trim: true,
+  custom: {
+    options: async (value, { req }) => {
+      const decoded_forgot_passwrod_authorization = await verifyToken({
+        token: value,
+        secretOnPublicKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string
+      });
+      (req as Request).decoded_forgot_passwrod_authorization = decoded_forgot_passwrod_authorization;
+      return true;
+    }
+  }
+};
 
 export const loginValidate = validate(
   checkSchema({
@@ -29,31 +97,7 @@ export const loginValidate = validate(
         }
       }
     },
-    password: {
-      notEmpty: {
-        errorMessage: USERMESSAGES.PASSWORD_IS_REQUIRED
-      },
-      isString: {
-        errorMessage: USERMESSAGES.PASSWORD_MUST_BE_A_STRING
-      },
-      isLength: {
-        options: {
-          min: 6,
-          max: 20
-        },
-        errorMessage: USERMESSAGES.PASSWORD_LENGTH_MUST_BE_BETWEEN_6_AND_20
-      },
-      isStrongPassword: {
-        options: {
-          minLength: 6,
-          minLowercase: 1,
-          minUppercase: 1,
-          minNumbers: 1,
-          minSymbols: 1
-        },
-        errorMessage: USERMESSAGES.PASSWORD_STRONG_REQUIREMENTS
-      }
-    }
+    password: passwordSchema
   })
 );
 
@@ -86,55 +130,8 @@ export const registerValidate = validate(
         errorMessage: USERMESSAGES.EMAIL_ALREADY_EXISTS
       }
     },
-    password: {
-      notEmpty: {
-        errorMessage: USERMESSAGES.PASSWORD_IS_REQUIRED
-      },
-      isString: {
-        errorMessage: USERMESSAGES.PASSWORD_MUST_BE_A_STRING
-      },
-      isLength: {
-        options: {
-          min: 6,
-          max: 20
-        },
-        errorMessage: USERMESSAGES.PASSWORD_LENGTH_MUST_BE_BETWEEN_6_AND_20
-      },
-      isStrongPassword: {
-        options: {
-          minLength: 6,
-          minLowercase: 1,
-          minUppercase: 1,
-          minNumbers: 1,
-          minSymbols: 1
-        },
-        errorMessage: USERMESSAGES.PASSWORD_STRONG_REQUIREMENTS
-      }
-    },
-    confirm_password: {
-      notEmpty: {
-        errorMessage: USERMESSAGES.CONFIRM_PASSWORD_IS_REQUIRED
-      },
-      isString: {
-        errorMessage: USERMESSAGES.CONFIRM_PASSWORD_MUST_BE_A_STRING
-      },
-      isLength: {
-        options: {
-          min: 6,
-          max: 20
-        },
-        errorMessage: USERMESSAGES.CONFIRM_PASSWORD_LENGTH_MUST_BE_BETWEEN_6_AND_20
-      },
-      custom: {
-        options: (value, { req }) => {
-          if (value !== req.body.password) {
-            throw new Error(USERMESSAGES.PASSWORD_CONFIRMATION_MISMATCH);
-          }
-          return true;
-        },
-        errorMessage: USERMESSAGES.PASSWORD_CONFIRMATION_MISMATCH
-      }
-    },
+    password: passwordSchema,
+    confirm_password: confirmPasswordSchema,
     date_of_birth: {
       notEmpty: {
         errorMessage: USERMESSAGES.DATE_OF_BIRTH_IS_REQUIRED
@@ -222,6 +219,53 @@ export const verifyEmailTokenValidate = validate(
           }
         }
       }
+    },
+    ['body']
+  )
+);
+
+export const forgotPasswrordValidate = validate(
+  checkSchema(
+    {
+      email: {
+        notEmpty: {
+          errorMessage: USERMESSAGES.EMAIL_IS_REQUIRED
+        },
+        isEmail: {
+          errorMessage: USERMESSAGES.INVALID_EMAIL_FORMAT
+        },
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            const user = await databaseService.users.findOne({ email: value });
+            if (!user) {
+              throw new Error(USERMESSAGES.USER_NOT_FOUND);
+            }
+            (req as Request).user = user;
+            return true;
+          }
+        }
+      }
+    },
+    ['body']
+  )
+);
+
+export const verifyForgotPasswordValidator = validate(
+  checkSchema(
+    {
+      forgot_password_token: forgotPasswrodSchema
+    },
+    ['body']
+  )
+);
+
+export const resetPasswordValidator = validate(
+  checkSchema(
+    {
+      forgot_password_token: forgotPasswrodSchema,
+      password: passwordSchema,
+      confirm_password: confirmPasswordSchema
     },
     ['body']
   )

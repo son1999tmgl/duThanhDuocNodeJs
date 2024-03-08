@@ -22,5 +22,6 @@ export const USERMESSAGES = {
   REFRESH_TOKEN_IS_REQUIRED: 'Refresh token is required',
   VERIFY_EMAIL_TOKEN_IS_REQUIRED: 'Verify email token is required',
   ACCOUNT_ALREADY_VERIFIED: 'Account already verified',
-  LOGOUT_SUCCESS: 'Logout successful'
+  LOGOUT_SUCCESS: 'Logout successful',
+  FORGOT_PASSWORD_TOKEN_IS_REQUIRED: 'Forgot password token is required'
 };

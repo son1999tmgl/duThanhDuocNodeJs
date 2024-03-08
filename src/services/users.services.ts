@@ -33,6 +33,18 @@ class UserServices {
       }
     });
   }
+  private async signForgotPasswordToken(user_id: string) {
+    return await signToken({
+      payload: {
+        user_id,
+        token_type: TokenType.RefeshToken
+      },
+      privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string,
+      options: {
+        expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN
+      }
+    });
+  }
 
   private async signVerifyEmailToken(user_id: string) {
     return await signToken({
@@ -148,6 +160,45 @@ class UserServices {
       accessToken,
       refreshToken
     };
+  }
+
+  async forgotPasswrod(user_id: string) {
+    const forgotPasswrod = await this.signForgotPasswordToken(user_id);
+    await databaseService.users.updateOne(
+      { _id: new ObjectId(user_id) },
+      {
+        $set: {
+          forgot_password_token: forgotPasswrod
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    );
+    return { forgotPasswrod };
+  }
+
+  async resetPasswrod(user_id: string, password: string) {
+    const [accessToken, refreshToken] = await this.signAccessAndRefreshToken(user_id.toString());
+    await databaseService.users.updateOne(
+      { _id: new ObjectId(user_id) },
+      {
+        $set: {
+          forgot_password_token: '',
+          password: hasPassword256(password)
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    );
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({
+        user_id: new ObjectId(user_id),
+        token: refreshToken
+      })
+    );
+    return { accessToken, refreshToken };
   }
 }
 
