@@ -7,6 +7,7 @@ import { TokenType, UserVerifyStatus } from '~/constants/enum';
 import { RefreshToken } from '~/models/schemas/RefreshToken';
 import { ObjectId } from 'mongodb';
 import { USERMESSAGES } from '~/constants/message';
+import { Follower } from '~/models/schemas/Follow';
 
 class UserServices {
   private async signAcessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -247,6 +248,34 @@ class UserServices {
       }
     );
     return user;
+  }
+  async follow(user_id: string, follow_user_id: string) {
+    const record_follow = await databaseService.follows.findOne({
+      user_id: new ObjectId(user_id),
+      follower_user_id: new ObjectId(follow_user_id)
+    });
+    if (record_follow) {
+      return {
+        message: 'Đã được follow'
+      };
+    }
+    const follow_user = await databaseService.follows.insertOne(
+      new Follower({
+        user_id: new ObjectId(user_id),
+        follower_user_id: new ObjectId(follow_user_id)
+      })
+    );
+    return follow_user;
+  }
+  async unFollow(user_id: string, follow_user_id: string) {
+    console.log('user_id: ', user_id);
+    console.log('follow_user_id: ', follow_user_id);
+
+    const record_follow = await databaseService.follows.findOneAndDelete({
+      user_id: new ObjectId(user_id),
+      follower_user_id: new ObjectId(follow_user_id)
+    });
+    return record_follow;
   }
 }
 

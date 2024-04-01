@@ -35,3 +35,6 @@ export interface TokenPayload extends JwtPayload {
   user_id?: ObjectId;
   token?: string;
 }
+export interface FollowResBody {
+  follow_user_id: string;
+}

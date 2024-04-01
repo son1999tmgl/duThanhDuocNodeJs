@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import {
+  FollowResBody,
   LogoutReqBody,
   RegisterReqBody,
   ResetPasswrodReqBody,
@@ -146,4 +147,38 @@ export const updateMeController = async (
   }
   const result = await userServices.updateMe(user_id.toString(), req.body);
   return res.json({ result });
+};
+
+export const followController = async (
+  req: Request<core.ParamsDictionary, any, FollowResBody, any, any>,
+  res: Response,
+  next: NextFunction
+) => {
+  const user_id: ObjectId | undefined = req.decoded_authorization?.user_id;
+  const { follow_user_id } = req.body;
+  if (!user_id) {
+    return next(new ErrorWithStatus({ message: USERMESSAGES.USER_NOT_FOUND, status: 401 }));
+  }
+  const result = await userServices.follow(user_id.toString() as string, follow_user_id);
+  return res.json({
+    result: result,
+    message: 'Follow thành công'
+  });
+};
+
+export const unFollowController = async (
+  req: Request<core.ParamsDictionary, any, FollowResBody, any, any>,
+  res: Response,
+  next: NextFunction
+) => {
+  const user_id: ObjectId | undefined = req.decoded_authorization?.user_id;
+  const { follow_user_id } = req.query;
+  if (!user_id) {
+    return next(new ErrorWithStatus({ message: USERMESSAGES.USER_NOT_FOUND, status: 401 }));
+  }
+  const result = await userServices.unFollow(user_id.toString() as string, follow_user_id);
+  return res.json({
+    result: result,
+    message: 'UnFollow thành công'
+  });
 };

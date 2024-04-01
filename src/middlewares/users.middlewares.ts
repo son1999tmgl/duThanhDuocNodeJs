@@ -168,9 +168,19 @@ export const accessTokenValidate = validate(
             return true;
           }
         }
+      },
+      name: {
+        custom: {
+          options: async (value, { req }) => {
+            if (!/[a-zA-Z0-9]+/.test(value)) throw new Error('Tên Không hợp lệ');
+            const user = await databaseService.users.findOne({ name: value });
+            if (user) throw new Error('Tên đã tồn tại');
+            return true;
+          }
+        }
       }
     },
-    ['headers']
+    ['headers', 'body']
   )
 );
 export const refreshTokenValidate = validate(

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   emailVerifyController,
+  followController,
   forgotPasswrordController,
   getMeController,
   loginController,
@@ -8,6 +9,7 @@ import {
   registerController,
   resendEmailVerifyController,
   resetPasswrordController,
+  unFollowController,
   updateMeController,
   verifyForgotPasswrordController
 } from '~/controllers/users.controllers';
@@ -80,4 +82,7 @@ usesRouter.patch(
   ]),
   wrapRequestHandler(updateMeController)
 );
+
+usesRouter.post('/follow', accessTokenValidate, verifyUserValidator, wrapRequestHandler(followController));
+usesRouter.delete('/follow', accessTokenValidate, verifyUserValidator, wrapRequestHandler(unFollowController));
 export default usesRouter;
