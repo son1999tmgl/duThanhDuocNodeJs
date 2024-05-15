@@ -17,6 +17,7 @@ import { ObjectId } from 'mongodb';
 import { UserVerifyStatus } from '~/constants/enum';
 import { ErrorWithStatus } from '~/models/Errors';
 import * as _ from 'lodash';
+import axios from 'axios';
 
 export const loginController = async (req: Request, res: Response) => {
   const { user }: any = req;
@@ -181,4 +182,37 @@ export const unFollowController = async (
     result: result,
     message: 'UnFollow thành công'
   });
+};
+
+export const oauth2Controller = async (req: Request, res: Response) => {
+  const { code } = req.query;
+  if (code) {
+    const body = {
+      code,
+      client_id: process.env.CLIENT_ID,
+      client_secret: process.env.CLIENT_SECRET,
+      redirect_uri: process.env.REDIRECT_URL,
+      grant_type: 'authorization_code'
+    };
+    try {
+      const { data } = await axios.post('https://oauth2.googleapis.com/token', body, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+      if (data) {
+        const { access_token, expires_in, token_type, id_token, scope } = data;
+        const info = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+          params: {
+            access_token: `${access_token}`
+          }
+        });
+        return res.json({ info: info['data'] });
+      }
+      return res.json({ data });
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+  return res.json({});
 };
