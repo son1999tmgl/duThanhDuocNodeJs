@@ -3,6 +3,8 @@ import usesRouter from './routers/users.routes';
 import { databaseService } from './services/database.services';
 import { defaultErrorHandler } from './middlewares/error.middlewares';
 import { oauth2Controller } from './controllers/users.controllers';
+import mediasRouter from './routers/medias.routes';
+import { initFile } from './utils/media';
 
 databaseService.connect();
 
@@ -14,7 +16,9 @@ app.get('/', (req, res) => {
   res.send('');
 });
 
+initFile();
 app.use('/user', usesRouter);
+app.use('/media', mediasRouter);
 app.use('/api/oauthGoogle', oauth2Controller);
 app.use('/api/oauthAccessToken', (req: Request, res: Response) => {
   console.log(req);
