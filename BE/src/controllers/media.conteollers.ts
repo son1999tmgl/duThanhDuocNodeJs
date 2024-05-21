@@ -15,7 +15,6 @@ export const upLoadImageController = async (req: Request, res: Response, next: N
   });
   await form.parse(req, async (err, fields, files) => {
     if (err) {
-      console.log(234);
       next(err);
     } else {
       const optimizePromises = [];
@@ -34,6 +33,25 @@ export const upLoadImageController = async (req: Request, res: Response, next: N
   });
 };
 
+export const upLoadVideoController = async (req: Request, res: Response, next: NextFunction) => {
+  const form = formidable({
+    uploadDir: path.resolve('./media/videos'),
+    keepExtensions: true,
+    maxFiles: 5,
+    multiples: true,
+    createDirsFromUploads: true,
+    allowEmptyFiles: false
+  });
+  const [fields, files] = await form.parse(req);
+  return res.json({ fields, files });
+};
+
+export const getImageController = async (req: Request, res: Response, next: NextFunction) => {
+  const fileName = req.params.filename;
+  const imgPath = path.resolve(`./media/images/${fileName}.jpeg`);
+  if (fs.existsSync(imgPath)) return res.sendFile(imgPath);
+  else return res.json({ message: 'not file' });
+};
 async function optimizeImage(filePath: string) {
   try {
     const optimizedFilePath = `${filePath.split('.')[0]}.jpeg`;
