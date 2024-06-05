@@ -1,5 +1,5 @@
 import './App.css'
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 export default function Home() {
     const getGoogleAuthUrl = () => {
         const url = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -21,7 +21,10 @@ export default function Home() {
     console.log(googleOauthUrl);
     return (
         <>
-          <Link to={googleOauthUrl}>Login with google</Link>
+          {/* <Link to={googleOauthUrl}>Login with google</Link> */}
+          <video controls width="400" height="300">
+            <source src="http://localhost:4000/media/videos/fullsource.mp4"></source>
+          </video>
         </>
       )
 }
